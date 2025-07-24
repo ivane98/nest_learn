@@ -23,7 +23,7 @@ export class AuthService {
       },
     });
 
-    const tokens = await this.signToken(user.id, user.email);
+    const tokens = await this.signToken(user.id, user.email, user.role);
     await this.updateRtHash(user.id, tokens.refresh_token);
     return tokens;
   }
@@ -47,7 +47,7 @@ export class AuthService {
       throw new ForbiddenException('Credentials Incorrect');
     }
 
-    const tokens = await this.signToken(user.id, user.email);
+    const tokens = await this.signToken(user.id, user.email, user.role);
     await this.updateRtHash(user.id, tokens.refresh_token);
     return tokens;
   }
@@ -65,7 +65,7 @@ export class AuthService {
 
     if (!rtMatches) throw new ForbiddenException('Access denied');
 
-    const tokens = await this.signToken(user.id, user.email);
+    const tokens = await this.signToken(user.id, user.email, user.role);
     await this.updateRtHash(user.id, tokens.refresh_token);
     return tokens;
   }
@@ -87,14 +87,15 @@ export class AuthService {
   async signToken(
     userId: number,
     email: string,
+    role: string,
   ): Promise<{ access_token: string; refresh_token: string }> {
     const access_token = await this.jwt.sign(
-      { sub: userId, email },
+      { sub: userId, email, role },
       { secret: this.config.getOrThrow('JWT_SECRET'), expiresIn: '15m' },
     );
 
     const refresh_token = await this.jwt.sign(
-      { sub: userId, email },
+      { sub: userId, email, role },
       { secret: this.config.getOrThrow('RT_SECRET'), expiresIn: '1w' },
     );
     return { access_token, refresh_token };

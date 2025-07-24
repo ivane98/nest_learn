@@ -25,6 +25,8 @@ model User {
   firstname String?
   lastname String?
 
+  role Role @default(USER)
+
   bookmarks Bookmark[]
 
   @@map("users")
@@ -42,5 +44,11 @@ model Bookmark {
   userId Int
   user User @relation(fields: [userId], references: [id])
 
+}
+
+enum Role {
+  ADMIN
+  EDITOR
+  USER
 }
 
