@@ -1,6 +1,6 @@
 import { ForbiddenException, Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { PrismaService } from 'src/prisma/prisma.service';
+import { PrismaService } from '../prisma/prisma.service';
 import { AuthDto } from './dto/auth.dto';
 import { ConfigService } from '@nestjs/config';
 import * as argon2 from 'argon2';
@@ -20,6 +20,7 @@ export class AuthService {
       data: {
         email,
         hash: await argon2.hash(password),
+        role: dto.role ?? 'USER',
       },
     });
 
@@ -52,10 +53,20 @@ export class AuthService {
     return tokens;
   }
 
-  async refresh(userId: number, rt: string) {
+  async refresh(rt: string) {
+    let payload: { sub: number; email: string; role: string };
+
+    try {
+      payload = this.jwt.verify(rt, {
+        secret: this.config.getOrThrow('RT_SECRET'),
+      });
+    } catch (e) {
+      throw new ForbiddenException('Invalid refresh token');
+    }
+
     const user = await this.prisma.user.findFirst({
       where: {
-        id: userId,
+        id: payload.sub,
       },
     });
 

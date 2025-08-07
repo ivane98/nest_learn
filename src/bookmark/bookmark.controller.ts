@@ -8,20 +8,22 @@ import {
   Patch,
   Post,
   UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
 import { BookmarkService } from './bookmark.service';
-import { JwtAuthGuard } from 'src/auth/guards/auth.guard';
+import { JwtAuthGuard } from '../auth/guards/auth.guard';
 import { CreateBookmarkDto } from './dto/create-bookmark.dto';
-import { GetUser } from 'src/auth/decorators/get-user.decorator';
+import { GetUser } from '../auth/decorators/get-user.decorator';
+import { CacheInterceptor } from '@nestjs/cache-manager';
 
 @UseGuards(JwtAuthGuard)
 @Controller('bookmark')
+@UseInterceptors(CacheInterceptor)
 export class BookmarkController {
   constructor(private readonly bookmarkService: BookmarkService) {}
 
   @Post()
   create(@Body() dto: CreateBookmarkDto, @GetUser('userId') userId: number) {
-    console.log(userId);
     return this.bookmarkService.create(dto, userId);
   }
 

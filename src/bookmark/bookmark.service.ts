@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { PrismaService } from 'src/prisma/prisma.service';
+import { PrismaService } from '../prisma/prisma.service';
 import { CreateBookmarkDto } from './dto/create-bookmark.dto';
 import { updateBookmarkDto } from './dto/update-bookmark.dto';
 
@@ -19,7 +19,11 @@ export class BookmarkService {
   }
 
   async getAll(userId: number) {
-    return this.prisma.bookmark.findMany({ where: { userId } });
+    const bookmarks = await this.prisma.bookmark.findMany({
+      where: { userId },
+    });
+
+    return bookmarks;
   }
 
   async getOne(userId: number, id: number) {
